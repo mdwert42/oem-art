@@ -2,15 +2,19 @@
 Shared pytest fixtures for all test suites.
 
 This module provides common fixtures used across different test modules:
-- Test database setup with SQLite in-memory
+- Test database setup with SQLite in-memory using StaticPool
 - Test client for API endpoint testing
 - Sample user fixtures (admin, public, inactive)
 - Authentication helpers
+
+Note: StaticPool is used to prevent threading issues with SQLite in-memory database
+during concurrent test execution.
 """
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 from typing import Generator, Dict
 
@@ -28,13 +32,17 @@ TEST_DATABASE_URL = "sqlite:///:memory:"
 def test_engine():
     """
     Create a test database engine.
-    Uses SQLite in-memory database for fast, isolated tests.
+    Uses SQLite in-memory database with StaticPool for fast, isolated tests.
+
+    StaticPool ensures thread safety and prevents "no such table" errors
+    that can occur with SQLite's default connection pooling.
 
     Scope: function - each test gets a fresh database
     """
     engine = create_engine(
         TEST_DATABASE_URL,
-        connect_args={"check_same_thread": False}
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool
     )
 
     # Create all tables

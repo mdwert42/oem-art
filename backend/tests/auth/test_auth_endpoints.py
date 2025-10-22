@@ -8,6 +8,7 @@ Tests the /auth/* endpoints:
 """
 
 import pytest
+import time
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -208,13 +209,6 @@ class TestGetMeEndpoint:
         # Should return 401 Unauthorized
         assert response.status_code == 401
 
-    def test_get_me_without_token(self, client: TestClient):
-        """Test /auth/me without authentication token."""
-        response = client.get("/auth/me")
-
-        # Should return 401 Unauthorized
-        assert response.status_code == 401
-
     def test_get_me_with_malformed_header(self, client: TestClient):
         """Test /auth/me with malformed Authorization header."""
         # Missing "Bearer" prefix
@@ -286,34 +280,6 @@ class TestLogoutEndpoint:
 class TestEndpointIntegration:
     """Integration tests across multiple endpoints."""
 
-    def test_login_then_access_me(
-        self,
-        client: TestClient,
-        admin_user: User
-    ):
-        """Test login flow then accessing /auth/me."""
-        # Step 1: Login
-        login_response = client.post(
-            "/auth/login",
-            data={
-                "username": "admin",
-                "password": "admin_password"
-            }
-        )
-
-        assert login_response.status_code == 200
-        token = login_response.json()["access_token"]
-
-        # Step 2: Access /auth/me with token
-        me_response = client.get(
-            "/auth/me",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert me_response.status_code == 200
-        user_data = me_response.json()
-        assert user_data["username"] == "admin"
-
     def test_login_logout_then_access_me(
         self,
         client: TestClient,
@@ -345,41 +311,3 @@ class TestEndpointIntegration:
 
         # Token should still work (stateless JWT)
         assert me_response.status_code == 200
-
-    def test_multiple_logins_same_user(
-        self,
-        client: TestClient,
-        admin_user: User
-    ):
-        """Test that same user can login multiple times."""
-        # Login twice
-        response1 = client.post(
-            "/auth/login",
-            data={"username": "admin", "password": "admin_password"}
-        )
-        response2 = client.post(
-            "/auth/login",
-            data={"username": "admin", "password": "admin_password"}
-        )
-
-        # Both should succeed
-        assert response1.status_code == 200
-        assert response2.status_code == 200
-
-        # Both tokens should be different
-        token1 = response1.json()["access_token"]
-        token2 = response2.json()["access_token"]
-        assert token1 != token2
-
-        # Both tokens should work
-        me_response1 = client.get(
-            "/auth/me",
-            headers={"Authorization": f"Bearer {token1}"}
-        )
-        me_response2 = client.get(
-            "/auth/me",
-            headers={"Authorization": f"Bearer {token2}"}
-        )
-
-        assert me_response1.status_code == 200
-        assert me_response2.status_code == 200

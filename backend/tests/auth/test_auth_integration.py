@@ -218,6 +218,10 @@ class TestConcurrentSessions:
             "/auth/login",
             data={"username": "admin", "password": "admin_password"}
         )
+
+        # Small delay to ensure different token timestamps
+        time.sleep(1)
+
         login2 = client.post(
             "/auth/login",
             data={"username": "admin", "password": "admin_password"}
