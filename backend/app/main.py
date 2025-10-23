@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
+from pathlib import Path
 
 from .database import create_tables
-from .routers import auth_router
+from .routers import auth_router, pieces_router
 
 # Extended API description with authentication guide
 API_DESCRIPTION = """
@@ -274,9 +276,21 @@ async def startup_event():
     create_tables()
     print("Database tables created/verified")
 
+    # Create uploads directory if it doesn't exist
+    uploads_dir = Path("./uploads")
+    uploads_dir.mkdir(exist_ok=True)
+    print(f"Uploads directory ready at: {uploads_dir.resolve()}")
+
+
+# Mount static files for serving uploaded images
+# Must be done before including routers to avoid route conflicts
+uploads_dir = Path("./uploads")
+if uploads_dir.exists():
+    app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
 # Include routers
 app.include_router(auth_router)
+app.include_router(pieces_router)
 
 
 # Root endpoint

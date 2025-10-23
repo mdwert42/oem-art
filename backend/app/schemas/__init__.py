@@ -1,5 +1,19 @@
 from .user import UserBase, UserCreate, UserUpdate, UserResponse, UserInDB
 from .auth import LoginRequest, Token, TokenData, RefreshTokenRequest, PasswordChangeRequest
+from .piece import (
+    PieceTypeEnum,
+    AvailabilityStatusEnum,
+    PiecePhotoBase,
+    PiecePhotoResponse,
+    PieceTagBase,
+    PieceTagCreate,
+    PieceTagResponse,
+    PieceBase,
+    PieceCreate,
+    PieceUpdate,
+    PieceResponse,
+    PieceListResponse,
+)
 
 __all__ = [
     "UserBase",
@@ -12,4 +26,16 @@ __all__ = [
     "TokenData",
     "RefreshTokenRequest",
     "PasswordChangeRequest",
+    "PieceTypeEnum",
+    "AvailabilityStatusEnum",
+    "PiecePhotoBase",
+    "PiecePhotoResponse",
+    "PieceTagBase",
+    "PieceTagCreate",
+    "PieceTagResponse",
+    "PieceBase",
+    "PieceCreate",
+    "PieceUpdate",
+    "PieceResponse",
+    "PieceListResponse",
 ]
